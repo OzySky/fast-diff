@@ -75,12 +75,12 @@ function diff_main(text1, text2, compact) {
   diff_cleanupMerge(diffs);
   if (compact) {
     for (var i = 0; i < diffs.length; i++) {
-    var item = diffs[i];
-    // If operation is DELETE or EQUAL, replace the actual text by its length
-    if (item[0] < 1) {
-      item[1] = item[1].length;
+      var item = diffs[i];
+      // If operation is DELETE or EQUAL, replace the actual text by its length
+      if (item[0] < 1) {
+        item[1] = item[1].length;
+      }
     }
-  }
   }
   return diffs;
 };
