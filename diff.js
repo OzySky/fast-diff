@@ -41,7 +41,7 @@ var DIFF_EQUAL = 0;
  * @param {string} text2 New string to be diffed.
  * @return {Array} Array of diff tuples.
  */
-function diff_main(text1, text2) {
+function diff_main(text1, text2, compact) {
   // Check for equality (speedup).
   if (text1 == text2) {
     if (text1) {
@@ -73,7 +73,15 @@ function diff_main(text1, text2) {
     diffs.push([DIFF_EQUAL, commonsuffix]);
   }
   diff_cleanupMerge(diffs);
-  diffs = fix_emoji(diffs);
+  if (compact) {
+    for (var i = 0; i < diffs.length; i++) {
+    var item = diffs[i];
+    // If operation is DELETE or EQUAL, replace the actual text by its length
+    if (item[0] < 1) {
+      item[1] = item[1].length;
+    }
+  }
+  }
   return diffs;
 };
 
@@ -566,46 +574,6 @@ var diff = diff_main;
 diff.INSERT = DIFF_INSERT;
 diff.DELETE = DIFF_DELETE;
 diff.EQUAL = DIFF_EQUAL;
-
-/*
- * Check diff did not split surrogate pairs.
- * Ex. [0, '\uD83D'], [-1, '\uDC36'], [1, '\uDC2F'] -> [-1, '\uD83D\uDC36'], [1, '\uD83D\uDC2F']
- *     '\uD83D\uDC36' === '🐶', '\uD83D\uDC2F' === '🐯'
- *
- * @param {Array} diffs Array of diff tuples
- * @return {Array} Array of diff tuples
- */
-function fix_emoji (diffs) {
-  var compact = false;
-  var starts_with_pair_end = function(str) {
-    return str.charCodeAt(0) >= 0xDC00 && str.charCodeAt(0) <= 0xDFFF;
-  }
-  var ends_with_pair_start = function(str) {
-    return str.charCodeAt(str.length-1) >= 0xD800 && str.charCodeAt(str.length-1) <= 0xDBFF;
-  }
-  for (var i = 2; i < diffs.length; i += 1) {
-    if (diffs[i-2][0] === DIFF_EQUAL && ends_with_pair_start(diffs[i-2][1]) &&
-        diffs[i-1][0] === DIFF_DELETE && starts_with_pair_end(diffs[i-1][1]) &&
-        diffs[i][0] === DIFF_INSERT && starts_with_pair_end(diffs[i][1])) {
-      compact = true;
-
-      diffs[i-1][1] = diffs[i-2][1].slice(-1) + diffs[i-1][1];
-      diffs[i][1] = diffs[i-2][1].slice(-1) + diffs[i][1];
-
-      diffs[i-2][1] = diffs[i-2][1].slice(0, -1);
-    }
-  }
-  if (!compact) {
-    return diffs;
-  }
-  var fixed_diffs = [];
-  for (var i = 0; i < diffs.length; i += 1) {
-    if (diffs[i][1].length > 0) {
-      fixed_diffs.push(diffs[i]);
-    }
-  }
-  return fixed_diffs;
-}
 
 /*
  * Try to merge tuples with their neigbors in a given range.
