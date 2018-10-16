@@ -454,7 +454,7 @@ function bootstrapOverSiteWatcher() {
     window.stripExtraSpaceRegex = /(>)\s+(<)/g
     //TODO: Implement dynamic Stylesheet Link insertion observer
     window.filterElementRegex = /script|meta|link|#comment/gi;
-    window.filterAttributesRegex = /^(aria|fb)\-/i;
+    window.filterAttributesRegex = /^(data|aria|fb)\-/i;
 
     function serializeElement(el, outerOrInner = 'outer') {
         return el[outerOrInner + 'HTML'].replace(serializeHTMLRegex, '$1').replace(stripExtraSpaceRegex, '$1$2')
