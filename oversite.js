@@ -388,7 +388,7 @@ function bootstrapOverSiteWatcher() {
                     break;
                 case 'attributes':
                     let {attributeName} = record;
-                    if (attributeName.match(filterAttributesRegex) || changed[record.target.id][attributeName]) {break}
+                    if (attributeName.match(filterAttributesRegex) || (changed[record.target.id] && changed[record.target.id][attributeName])) {break}
                     if (record.target.nodeName.match(/input/) && attributeName.match(/value/gi)) {break}
                     changed[record.target.id][attributeName] = {
                         oldValue: record.oldValue,
